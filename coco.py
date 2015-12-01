@@ -1,13 +1,13 @@
-from pycocotools.coco import COCO
 import os
 import logging
 import numpy as np
-import logging
+import json
+import itertools
 
-from nltk import FreqDist
-from nltk import word_tokenize
+from nltk import FreqDist, word_tokenize
 from bisect import bisect
 from random import randint
+from collections import defaultdict
 
 import config
 
@@ -31,7 +31,7 @@ class Vocab:
             accumulated += freq
             self.accumulated_frequencies.append(accumulated)
             
-        self.index2word.append("Something_really_rare")
+        self.index2word.append('UNK')
         self.accumulated_frequencies.append(self.total_words)
             
     def get_word(self, index):
@@ -69,24 +69,46 @@ class Vocab:
 
 class CocoManager(object):
     def __init__(self, annotations_file, words_count, vocab=None):
-        self.coco = COCO(annotations_file)
-        img_ids = self.coco.getImgIds()
-        ann_ids = self.coco.getAnnIds(img_ids)
-        anns = self.coco.loadAnns(ann_ids)
+        with open(annotations_file) as f:
+            self.dataset = json.load(f)
+
+        self.images = {image['id']: image for image in self.dataset['images']}
+
+        self.img_to_anns = defaultdict(list)
+        self.annotations = {}
+        for ann in self.dataset['annotations']:
+            self.annotations[ann['id']] = ann
+            self.img_to_anns[ann['image_id']] += [ann]
 
         if vocab is not None:
             self.vocab = vocab
         else:
             all_words = []
-            for ann in anns:
+            for ann in self.load_annotations(self.img_ids()):
                 all_words += word_tokenize(ann['caption'].lower())
             self.vocab = Vocab(all_words, words_count)
 
     def img_ids(self):
-        return self.coco.getImgIds()
+        return self.images.keys()
+
+    def load_annotations(self, img_ids):
+        if type(img_ids) == list:
+            ann_list = list(itertools.chain.from_iterable([self.img_to_anns[img_id] for img_id in self.img_ids()]))
+        elif type(img_ids) == int:
+            ann_list = self.img_to_anns[img_ids]
+        else:
+            raise TypeError('img_ids must be either int or list of ints')
+
+        return [self.annotations[ann['id']] for ann in ann_list]
+
+    def load_images(self, img_ids):
+        if type(img_ids) == list:
+            return [self.images[img_id] for img_id in img_ids]
+        elif type(img_ids) == int:
+            return [self.images[img_ids]]
+        else:
+            raise TypeError('img_ids must be either int or list of ints')
 
     def sents(self, img_ids):
-        ann_ids = self.coco.getAnnIds(img_ids)
-        anns = self.coco.loadAnns(ann_ids)
-        sents = [word_tokenize(ann['caption'].lower()) for ann in anns]
+        sents = [word_tokenize(ann['caption'].lower()) for ann in self.load_annotations(img_ids)]
         return self.vocab.transform(sents)

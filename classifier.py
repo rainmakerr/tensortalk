@@ -24,7 +24,7 @@ if __name__ == '__main__':
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=session, coord=coord)
 
-    window_loss = 10.
+    window_loss = 20.
     processed = 0
 
     try:

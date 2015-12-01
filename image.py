@@ -69,7 +69,7 @@ def prepare_features(coco_manager, image_source_dir, target):
         logger().info('%d items processed', processed)
         processed += 1
 
-        img = coco_manager.coco.loadImgs([img_id])[0]
+        img = coco_manager.load_images(img_id)[0]
 
         if img['file_name'] in broken_images:
             logger().warn('Image is broken, skipping')

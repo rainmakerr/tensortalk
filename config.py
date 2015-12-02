@@ -5,7 +5,7 @@ from utils import ensure_dir
 base_path = os.path.join(os.path.expanduser('~'), '.tensortalk')
 models_path = os.path.join(base_path, 'models')
 data_path = os.path.join(base_path, 'data')
-coco_path = os.path.join(base_path, 'coco_models')
+coco_path = os.path.join(base_path, 'coco')
 logs_path = os.path.join(base_path, 'logs')
 
 small_config = {
@@ -16,18 +16,17 @@ small_config = {
     'hidden_count': 512,
     'max_len': 30,
     'sents_per_sample': 5,
-
     'batch_size': 128,
 
     'weights_file_template': os.path.join(models_path, 'net_%d.ckpt'),
 
     'train_annotations_file': os.path.join(coco_path, 'captions_train2014.json'),
-    'train_features_file': os.path.join(data_path, 'test_image_features.pb'),
-    'train_image_source_dir': os.path.expanduser('~/Downloads/train2014'),
+    'train_image_source_dir': os.path.join(coco_path, 'train2014'),
+    'train_features_file': os.path.join(data_path, 'image_features.pb'),
 
     'validation_annotations_file': os.path.join(coco_path, 'captions_val2014.json'),
-    'validation_features_file': os.path.join(data_path, 'test_val_image_features.pb'),
-    'validation_image_source_dir': os.path.expanduser('~/Downloads/val2014')
+    'validation_image_source_dir': os.path.join(coco_path, 'val2014'),
+    'validation_features_file': os.path.join(data_path, 'val_image_features.pb')
 }
 
 def set_active_config(config):

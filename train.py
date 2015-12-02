@@ -38,7 +38,7 @@ if __name__ == '__main__':
                 epochs_completed = processed / CHECKPOINT_INTERVAL
                 weights_file = config.weights_file_template % epochs_completed
                 net.save(weights_file)
-                logger().info('Model saved to %s', weights_file)
+                logger().info('Model checkpoint saved to %s', weights_file)
 
     except tf.errors.OutOfRangeError:
         print 'Done'

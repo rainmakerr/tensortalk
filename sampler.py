@@ -20,20 +20,24 @@ class BeamSearchSampler(object):
 
         for i in xrange(size):
             new_candidates = []
-            for candidate in candidates:
-                text_input = np.zeros((1, 30), dtype=np.int32)
-                text_input[0, :len(candidate.sequence)] = np.int32(candidate.sequence)
+            text_input = np.zeros((self.beam_size, 30), dtype=np.int32)
+            lens_input = np.zeros((self.beam_size, 1), dtype=np.int32)
+            image_input = hidden_start + np.zeros((self.beam_size,) + hidden_start.shape[1:], dtype=np.float32)
 
-                lens_input = len(candidate.sequence) * np.ones((1, 1), dtype=np.int32)
+            for candidate_id, candidate in enumerate(candidates):
+                text_input[candidate_id, :len(candidate.sequence)] = np.int32(candidate.sequence)
+                lens_input[candidate_id] = len(candidate.sequence)
 
-                feed_dict = {
-                    model.input_pipeline.image_input: hidden_start,
-                    model.input_pipeline.text_input: text_input.reshape(1, -1),
-                    model.input_pipeline.lens_input: lens_input}
+            feed_dict = {
+                model.input_pipeline.image_input: image_input,
+                model.input_pipeline.text_input: text_input,
+                model.input_pipeline.lens_input: lens_input}
 
-                model_output = model.session.run(model.probs, feed_dict=feed_dict)
-                next_word = model_output[0, len(candidate.sequence) - 1, :]
-                for index, word in enumerate(next_word):
+            model_output = model.session.run(model.probs, feed_dict=feed_dict)
+            next_word = model_output[:, len(candidate.sequence) - 1, :]
+
+            for candidate_id, candidate in enumerate(candidates):
+                for index, word in enumerate(next_word[candidate_id]):
                     new_candidates.append(CandidateSequence(candidate.likelihood + word,
                                                             candidate.sequence + [index],
                                                             candidate.probs + [next_word]))

@@ -1,5 +1,4 @@
 nltk
 numpy
 pillow
-scikit-image
 tensorflow

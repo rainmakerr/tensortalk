@@ -1,6 +1,7 @@
 import argparse
+import numpy as np
 import tensorflow as tf
-import skimage.io as io
+import PIL.Image
 
 import config
 from image import ImageManager
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     sampler = BeamSearchSampler(beam_size=5)
 
     for img_name in args.images:
-        img = io.imread(img_name)
+        img = np.float32(PIL.Image.open(img_name))
         img_features = image_manager.feature_vector(img)
 
         sequences = sampler.sample(model, img_features, size=15)

@@ -1,8 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-
-import skimage.io as io
+import PIL.Image
 
 import config
 from image import ImageManager
@@ -25,7 +24,7 @@ def prepare_features(coco_manager, image_source_dir, target):
             logger().warn('Image is broken, skipping')
             continue
 
-        raw_data = io.imread(os.path.join(image_source_dir, img['file_name']))
+        raw_data = np.float32(PIL.Image.open(os.path.join(image_source_dir, img['file_name'])))
         if raw_data.ndim == 2:
             raw_data = raw_data.reshape(*(raw_data.shape + (1,))) + np.zeros((1, 1, 3), dtype=np.int32)
             logger().warn('Found grayscale image, fixed')

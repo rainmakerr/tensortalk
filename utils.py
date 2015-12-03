@@ -1,5 +1,6 @@
 import logging
 import os
+import urllib
 
 LOGGER_NAME = 'tensortalk'
 

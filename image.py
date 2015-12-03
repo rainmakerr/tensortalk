@@ -1,4 +1,5 @@
 import os
+import zipfile
 import numpy as np
 import tensorflow as tf
 
@@ -9,15 +10,16 @@ from utils import logger, ensure_file, ensure_dir
 
 class ImageManager(object):
     def __init__(self):
-        models_dir = os.path.expanduser(config.base_path)
-        net_file = os.path.join(models_dir, 'googlenet.pb')
-        synset_file = os.path.join(models_dir, 'synset.txt')
+        models_dir = config.base_path
+        net_file = os.path.join(models_dir, 'tensorflow_inception_graph.pb')
+        synset_file = os.path.join(models_dir, 'imagenet_comp_graph_label_strings.txt')
 
         ensure_dir(models_dir)
-        ensure_file(net_file,
-            'https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/android/assets/tensorflow_inception_graph.pb?raw=true')
-        ensure_file(synset_file,
-            'https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/examples/android/assets/imagenet_comp_graph_label_strings.txt')
+        if not (os.path.isfile(net_file) and os.path.isfile(synset_file)):
+            archive_path = os.path.join(models_dir, 'inception5h.zip')
+            ensure_file(archive_path, 'https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip')
+            z = zipfile.ZipFile(archive_path)
+            z.extractall(models_dir)
 
         self.synset = []
         with open(synset_file) as f:

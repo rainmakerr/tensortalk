@@ -13,6 +13,7 @@ if __name__ == '__main__':
     input_pipeline = TrainInputPipeline([config.train_features_file], num_epochs=5, batch_size=config.batch_size)
 
     session = tf.Session()
+    tf.set_random_seed(1337)
     net = CaptionNetwork(session, input_pipeline)
 
     current_logs_path = os.path.join(config.logs_path, str(int(time.time())))

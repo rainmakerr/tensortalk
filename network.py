@@ -5,18 +5,18 @@ import numpy as np
 import config
 
 def weight_init(width, height):
-    w = np.random.uniform(low = -2.45 / (width + height), high = 2.45 / (width + height), size = (width, height))
-    return tf.Variable(np.float32(w))
+    w = tf.random_uniform(minval = -2.45 / (width + height), maxval = 2.45 / (width + height), shape = [width, height])
+    return tf.Variable(w)
 
-def bias_init(size):
-    b = np.zeros(size, dtype=np.float32)
+def bias_init(shape):
+    b = tf.zeros(shape)
     return tf.Variable(b)
 
 class WrappedCell(rnn_cell.RNNCell):
     def __init__(self, num_units, num_outputs):
         self.lstm = rnn_cell.LSTMCell(num_units, num_units)
         self.w_softmax = weight_init(num_units, num_outputs)
-        self.b_softmax = bias_init(num_outputs)
+        self.b_softmax = bias_init([num_outputs])
 
         self.num_units = num_units
         self.num_outputs = num_outputs
@@ -94,7 +94,7 @@ class CaptionNetwork(object):
         inputs = [tf.squeeze(input_, [1]) for input_ in embedded]
 
         w_image = weight_init(config.image_features_count, config.hidden_count)
-        b_image = bias_init(config.hidden_count)
+        b_image = bias_init([config.hidden_count])
 
         image_transform = tf.matmul(input_pipeline.image_input, w_image) + b_image
         hidden_start = tf.concat(1, [tf.zeros_like(image_transform), image_transform])

@@ -9,7 +9,7 @@ class CandidateSequence(object):
         self.probs = probs
 
 class BeamSearchSampler(object):
-    def __init__(self, beam_size=32):
+    def __init__(self, beam_size=5):
         self.beam_size = beam_size
 
     def sample(self, model, hidden_start, size=10):

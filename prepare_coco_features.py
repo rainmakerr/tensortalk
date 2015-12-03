@@ -8,49 +8,62 @@ from image import ImageManager
 from coco import CocoManager
 from utils import logger
 
+IMAGE_BATCH_SIZE = 64
+
 def prepare_features(coco_manager, image_source_dir, target):
     image_manager = ImageManager()
-    broken_images = set(['COCO_train2014_000000167126.jpg'])
 
     processed = 0
     storage = tf.python_io.TFRecordWriter(target)
+
+    image_batch = []
+    text_batch = []
+    len_batch = []
+
     for img_id in coco_manager.img_ids():
         logger().info('%d items processed', processed)
         processed += 1
 
-        img = coco_manager.load_images(img_id)[0]
+        try:
+            img = coco_manager.load_images(img_id)[0]
 
-        if img['file_name'] in broken_images:
-            logger().warn('Image is broken, skipping')
-            continue
+            raw_data = np.float32(PIL.Image.open(os.path.join(image_source_dir, img['file_name'])))
+            if raw_data.ndim == 2:
+                raw_data = raw_data.reshape(*(raw_data.shape + (1,))) + np.zeros((1, 1, 3), dtype=np.int32)
+                logger().warn('Found grayscale image, fixed')
 
-        raw_data = np.float32(PIL.Image.open(os.path.join(image_source_dir, img['file_name'])))
-        if raw_data.ndim == 2:
-            raw_data = raw_data.reshape(*(raw_data.shape + (1,))) + np.zeros((1, 1, 3), dtype=np.int32)
-            logger().warn('Found grayscale image, fixed')
+            text_data_batch = np.int64(coco_manager.sents(img_id))
 
-        if raw_data.shape[0] < 224 or raw_data.shape[1] < 224:
-            logger().warn('Image is too small, skipping')
-            continue
+            text_buffer = np.zeros((config.sents_per_sample, config.max_len + 1), dtype=np.int64)
+            len_buffer = np.zeros(config.sents_per_sample, dtype=np.int64)
 
-        image_data = image_manager.feature_vector(raw_data).reshape(-1)
-        text_data_batch = np.int64(coco_manager.sents(img_id))
+            for idx, text_data in enumerate(text_data_batch[:config.sents_per_sample, :config.max_len]):
+                text_buffer[idx, 0] = config.words_count + 1
+                text_buffer[idx, 1 : 1 + text_data.shape[-1]] = text_data
+                len_buffer[idx] = text_data.shape[-1]
 
-        text_buffer = np.zeros((config.sents_per_sample, config.max_len + 1), dtype=np.int64)
-        len_buffer = np.zeros(config.sents_per_sample, dtype=np.int64)
+            image_batch.append(raw_data)
+            text_batch.append(text_buffer)
+            len_batch.append(len_buffer)
 
-        for idx, text_data in enumerate(text_data_batch[:config.sents_per_sample, :config.max_len]):
-            text_buffer[idx, 0] = config.words_count + 1
-            text_buffer[idx, 1 : 1 + text_data.shape[-1]] = text_data
-            len_buffer[idx] = text_data.shape[-1]
+        except Exception as e:
+            logger().error('Failed processing image %s: %s', img['file_name'], str(e))
 
-        example = tf.train.Example()
-        example.features.feature['image'].float_list.value.extend([float(value) for value in image_data])
-        example.features.feature['text'].int64_list.value.extend(text_buffer[:, :-1].reshape(-1))
-        example.features.feature['result'].int64_list.value.extend(text_buffer[:, 1:].reshape(-1))
-        example.features.feature['len'].int64_list.value.extend(len_buffer)
+        if (len(image_batch) == IMAGE_BATCH_SIZE):
+            image_data = image_manager.extract_features(image_batch)
 
-        storage.write(example.SerializeToString())
+            for image, text, length in zip(image_data, text_batch, len_batch):
+                example = tf.train.Example()
+                example.features.feature['image'].float_list.value.extend([float(value) for value in image])
+                example.features.feature['text'].int64_list.value.extend(text[:, :-1].reshape(-1))
+                example.features.feature['result'].int64_list.value.extend(text[:, 1:].reshape(-1))
+                example.features.feature['len'].int64_list.value.extend(length)
+
+                storage.write(example.SerializeToString())
+
+            image_batch = []
+            text_batch = []
+            len_batch = []
 
 if __name__ == '__main__':
     train_coco_manager = CocoManager(

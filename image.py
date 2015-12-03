@@ -52,8 +52,14 @@ class ImageManager(object):
         result = self.session.run('import/output2:0', feed_dict={'import/input:0': data})
         return zip(self.synset, result)
 
-    def feature_vector(self, image):
-        data = self.prepare_data(image)
-        data = data.reshape((1,) + data.shape)
+    def extract_features(self, raw_data):
+        if type(raw_data) == list:
+            data = [self.prepare_data(image) for image in raw_data]
+            data = np.stack(data, axis=0)
+        else:
+            data = self.prepare_data(raw_data)
+            data = data.reshape((1,) + data.shape)
+            
         features = self.session.run('import/avgpool0/reshape:0', feed_dict={'import/input:0': data})
+
         return features

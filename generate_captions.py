@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     for img_name in args.images:
         img = np.float32(PIL.Image.open(img_name))
-        img_features = image_manager.feature_vector(img)
+        img_features = image_manager.extract_features(img)
 
         sequences = sampler.sample(model, img_features, size=15)
         print img_name

@@ -36,5 +36,5 @@ if __name__ == '__main__':
         sequences = sampler.sample(model, img_features, size=15)
         print img_name
         for sequence in sequences[-3:]:
-            words = [coco_manager.vocab.get_word(i - 1) for i in sequence]
+            words = [coco_manager.vocab.get_word(word_idx - 1, limit=config.output_words_count - 1) for word_idx in sequence]
             print ' '.join(words)

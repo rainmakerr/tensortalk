@@ -34,9 +34,12 @@ class Vocab:
         self.index2word.append('UNK')
         self.accumulated_frequencies.append(self.total_words)
             
-    def get_word(self, index):
+    def get_word(self, index, limit=None):
         if index == -1:
             return ' '
+        elif limit is not None and index >= limit:
+            return 'UNK'
+
         return self.index2word[index]
     
     def get_index(self, word):

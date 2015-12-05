@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import json
 import itertools
+import zipfile
 
 from nltk import FreqDist, word_tokenize
 from bisect import bisect
@@ -10,6 +11,7 @@ from random import randint
 from collections import defaultdict
 
 import config
+from utils import ensure_file
 
 class Vocab:
     def __init__(self, words, words_count):
@@ -72,6 +74,17 @@ class Vocab:
 
 class CocoManager(object):
     def __init__(self, annotations_file, words_count, vocab=None):
+        if not os.path.isfile(annotations_file):
+            archive_path = os.path.join(config.base_path, 'captions_train-val2014.zip')
+            ensure_file(archive_path, 'http://msvocds.blob.core.windows.net/annotations-1-0-3/captions_train-val2014.zip')
+            z = zipfile.ZipFile(archive_path)
+            infolist = []
+            for zipinfo in z.infolist():
+                zipinfo.filename = os.path.basename(zipinfo.filename)
+                infolist.append(zipinfo)
+
+            z.extractall(config.coco_path, infolist)
+
         with open(annotations_file) as f:
             self.dataset = json.load(f)
 

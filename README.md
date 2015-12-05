@@ -1,6 +1,6 @@
 Image captioning with tensorflow
 
-To train your own model, download ms coco dataset from http://mscoco.org/dataset/#download. You need to download 2014 training images, 2014 validation images and 2014 train/val image captions. Unpack data into ~/.tensortalk/coco and run
+To train your own model, download ms coco dataset from http://mscoco.org/dataset/#download. You need to download 2014 training images and 2014 validation images. Unpack data into ~/.tensortalk/coco and run
 ```
 python prepare_coco_features.py
 python train.py

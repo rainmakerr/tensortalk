@@ -69,7 +69,7 @@ def evaluate_sampler(sampler, coco_manager, model_file, limit=NO_LIMIT):
                 logger().info('Current score: %f', score)
                 logger().info('Batch %d completed, average score is %f', processed, total_score / processed)
 
-                candidate_words = [coco_manager.vocab.get_word(i - 1) for i in candidate]
+                candidate_words = [coco_manager.vocab.get_word(i - 1, limit=config.output_words_count - 1) for i in candidate]
                 logger().info('Candidate sentence: %s', ' '.join(candidate_words))
                 for sequence in result:
                     reference_words = [coco_manager.vocab.get_word(i - 1) for i in sequence]

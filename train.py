@@ -3,9 +3,9 @@ import tensorflow as tf
 import os
 import time
 
-import config
-from utils import logger, ensure_dir
-from network import CaptionNetwork, TrainInputPipeline
+from tensortalk import config
+from tensortalk.utils import logger, ensure_dir
+from tensortalk.network import CaptionNetwork, TrainInputPipeline
 
 CHECKPOINT_INTERVAL = 2500
 

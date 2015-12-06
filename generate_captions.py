@@ -3,11 +3,11 @@ import numpy as np
 import tensorflow as tf
 import PIL.Image
 
-import config
-from image import ImageManager
-from coco import CocoManager
-from network import CaptionNetwork, UserInputPipeline
-from sampler import BeamSearchSampler
+from tensortalk import config
+from tensortalk.image import ImageManager
+from tensortalk.coco import CocoManager
+from tensortalk.network import CaptionNetwork, UserInputPipeline
+from tensortalk.sampler import BeamSearchSampler
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

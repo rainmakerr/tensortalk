@@ -3,10 +3,10 @@ import numpy as np
 import tensorflow as tf
 import PIL.Image
 
-import config
-from image import ImageManager
-from coco import CocoManager
-from utils import logger
+from tensortalk import config
+from tensortalk.image import ImageManager
+from tensortalk.coco import CocoManager
+from tensortalk.utils import logger
 
 IMAGE_BATCH_SIZE = 64
 

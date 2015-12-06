@@ -1,10 +1,10 @@
 import os
 import argparse
 
-import config
-from coco import CocoManager
-from sampler import BeamSearchSampler
-from metrics import evaluate_sampler
+from tensortalk import config
+from tensortalk.coco import CocoManager
+from tensortalk.sampler import BeamSearchSampler
+from tensortalk.metrics import evaluate_sampler
 
 def run_evaluation():
     models = [os.path.join(config.models_path, model) for model in os.listdir(config.models_path) if model.endswith('.ckpt')]

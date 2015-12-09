@@ -10,8 +10,6 @@ from image import ImageManager
 from coco import CocoManager
 from sampler import BeamSearchSampler
 
-NO_LIMIT = -1
-
 def make_ngrams(sent, n):
     return [tuple(sent[i:i+n]) for i in range(len(sent) - n + 1)]
 
@@ -40,7 +38,7 @@ def bleu_score(candidate, references, n=4):
 
     return float(hits) / total
 
-def evaluate_sampler(sampler, coco_manager, model_file, limit=NO_LIMIT):
+def evaluate_sampler(sampler, coco_manager, model_file, limit=None):
     graph = tf.Graph()
     session = tf.Session(graph=graph)
     with graph.as_default():
@@ -75,7 +73,7 @@ def evaluate_sampler(sampler, coco_manager, model_file, limit=NO_LIMIT):
                     reference_words = [coco_manager.vocab.get_word(i - 1) for i in sequence]
                     logger().info('Reference sentence: %s', ' '.join(reference_words))
 
-                if limit != NO_LIMIT and processed >= limit:
+                if limit is not None and processed >= limit:
                     raise StopIteration()
 
         except tf.errors.OutOfRangeError:

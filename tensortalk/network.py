@@ -12,7 +12,7 @@ def bias_init(shape):
     b = tf.zeros(shape)
     return tf.Variable(b)
 
-class WrappedCell(rnn_cell.RNNCell):
+class WordCell(rnn_cell.RNNCell):
     def __init__(self, num_units, num_outputs):
         self.lstm = rnn_cell.LSTMCell(num_units, num_units)
         self.w_softmax = weight_init(num_units, num_outputs)
@@ -99,7 +99,7 @@ class CaptionNetwork(object):
         image_transform = tf.matmul(input_pipeline.image_input, w_image) + b_image
         hidden_start = tf.concat(1, [tf.zeros_like(image_transform), image_transform])
 
-        cell = WrappedCell(config.hidden_count, config.output_words_count + 1)
+        cell = WordCell(config.hidden_count, config.output_words_count + 1)
         probs_list, self.hidden = rnn.rnn(
             cell=cell,
             inputs=inputs,
